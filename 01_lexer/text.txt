@@ -1,0 +1,11 @@
+3 + 4 * 10 ) [ ] }
+  + -20 *2 { :=
+  , ' : $ # = != < <= > >= ..
+  end if while then endif end
+  48 /*print_range
+   2222*/ if
+    50000 ... testei asd 23 ...
+  38 !merkkijono! mottonen Metri
+  A110 AS1
+  12.3
+  if
