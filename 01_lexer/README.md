@@ -35,7 +35,7 @@
         - Decimal literal is looked for first so if the lexer sees a number which is followed by a point and a single number, then we have a decimal literal and not an integer.
     
     5. Did you implement any extras? If so explain them (what and how)
-    - Nope, too hard and didn't get them to work.
+    - Multiline comment works having given it the choice of being .* or \n with an extra parameter ? so that it is lazy and stops commenting on the first triple dot it encounters.
     
     6. What did you think of this assignment? What was difficult? What was easy? Did you learn anything useful?
     - It took me quite a while to understand how and what and why is everything going on with the lexical analysis and especially how does the code work. But after I undestood it the rest of the project wasn't all that difficult. It was nice to get my hand on the code as during the course that hasn't really happened. And something useful... Well, this part (and I assume the rest of them too) really does help understand how does these things called programming languages work and do their job.

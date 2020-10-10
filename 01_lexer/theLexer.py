@@ -94,6 +94,7 @@ def t_comment(t):
 
 def t_RANGE_IDENT(t):
     r'_[a-zA-Z_\d]+'
+    t.type = reserved.get(t.value, 'RANGE_IDENT')
     return t
 
 def t_DECIMAL_LITERAL(t):
@@ -117,7 +118,7 @@ def t_COORDINATE_IDENT(t):
     return t
 
 def t_FUNC_IDENT(t):
-    r'[A-Z][a-z0-9]+'
+    r'[A-Z][a-z_0-9]+'
     t.type = reserved.get(t.value, 'FUNC_IDENT')
     return t
 
