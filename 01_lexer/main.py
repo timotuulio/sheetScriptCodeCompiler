@@ -86,7 +86,6 @@ t_SQUOTE = r"'"
 t_COLON = r':'
 t_DOLLAR = r'\$'
 t_NUMBER_SIGN = r'\#'
-#t_EXLAMATION_MARK = r'!'
 
 def t_comment(t):
     r'\.\.\.(.|\n)*?\.\.\.'
@@ -154,23 +153,6 @@ def t_error(t):
 # Build the lexer
 lexer = lex.lex()
 
-# Test it out
-with open('text.txt', 'r', encoding='utf-8') as INFILE:
-    data3 = INFILE.read()
-
-data2 = '''
-3 + 4 * 10 ) [ ] }
-  + -20 *2 { :=
-  , ' : $ # = != < <= > >= ..
-  end if while then endif end 
-  48 /*print_range
-   2222*/ if
-    50000 ... testei asd 23 ...
-  38 !merkkijono! mottonen Metri
-  A110 AS1
-  12.3
-  if
-'''
 
 #-f text.txt
 #-h
