@@ -87,7 +87,7 @@ t_DOLLAR = r'\$'
 t_NUMBER_SIGN = r'\#'
 
 def t_comment(t):
-    r'\.\.\..*\.\.\.'
+    r'\.\.\..\r\n]*\.\.\.'
     pass
 
 def t_RANGE_IDENT(t):
