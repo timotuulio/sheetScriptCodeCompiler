@@ -1,4 +1,5 @@
 import ply.lex as lex
+import sys as sys
 
 reserved = {
     'if' : 'IF',
@@ -80,11 +81,12 @@ t_RSQUARE = r'\]'
 t_LCURLY = r'\{'
 t_RCURLY = r'\}'
 t_COMMA = r','
-t_DOTDOT = r'\..'
+t_DOTDOT = r'\.\.'
 t_SQUOTE = r"'"
 t_COLON = r':'
 t_DOLLAR = r'\$'
 t_NUMBER_SIGN = r'\#'
+#t_EXLAMATION_MARK = r'!'
 
 def t_comment(t):
     r'\.\.\..*\.\.\.'
@@ -105,7 +107,7 @@ def t_INT_LITERAL(t):
     return t
 
 def t_INFO_STRING(t):
-    r'![A_Za-z]*!'
+    r'!.*!'
     t.type = reserved.get(t.value, 'INFO_STRING')
     return t
 
@@ -115,7 +117,7 @@ def t_COORDINATE_IDENT(t):
     return t
 
 def t_FUNC_IDENT(t):
-    r'[A-Z][a-z0-9]*'
+    r'[A-Z][a-z0-9]+'
     t.type = reserved.get(t.value, 'FUNC_IDENT')
     return t
 
@@ -146,7 +148,7 @@ t_ignore = ' \t'
 # Error handling rule
 def t_error(t):
     print("Illegal character '%s' on line " % t.value[0], t.lexer.lineno)
-    t.lexer.skip(1)
+    sys.exit()
 
 # Build the lexer
 lexer = lex.lex()
