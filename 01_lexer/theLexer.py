@@ -89,7 +89,7 @@ t_NUMBER_SIGN = r'\#'
 #t_EXLAMATION_MARK = r'!'
 
 def t_comment(t):
-    r'\.\.\..\r\n]*\.\.\.'
+    r'\.\.\.(.|\n)*?\.\.\.'
     pass
 
 def t_RANGE_IDENT(t):
