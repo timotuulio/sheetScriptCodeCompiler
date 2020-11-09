@@ -107,7 +107,7 @@ def t_INT_LITERAL(t):
     return t
 
 def t_INFO_STRING(t):
-    r'!.*!'
+    r'!.*?!'
     t.type = reserved.get(t.value, 'INFO_STRING')
     return t
 

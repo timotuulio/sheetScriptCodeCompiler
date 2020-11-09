@@ -111,7 +111,7 @@ def t_INT_LITERAL(t):
 # Tähän nyt pitäis saada se, että kahden info stringin väliin vois tulla jotain
 # TODO
 def t_INFO_STRING(t):
-    r'!.*!'
+    r'!.*?!'
     t.type = reserved.get(t.value, 'INFO_STRING')
     return t
 

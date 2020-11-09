@@ -14,13 +14,9 @@ def p_program(p):
     #print( 'program' )
 
 def p_function_or_variable_definition1(p):
-    '''function_or_variable_definition : atom
-                                       | variable_definition
-                                       | function_definition'''
-                                       #| subroutine_definition
-
-#def p_function_or_variable_definition2(p):
-#    '''function_or_variable_definition2 : function_or_variable_definition atom'''
+    '''function_or_variable_definition : variable_definition
+                                       | function_definition
+                                       | subroutine_definition'''
 
 def p_variable_definition(p):
     '''variable_definition : sheet_definition
@@ -30,7 +26,7 @@ def p_variable_definition(p):
 def p_sheet_definition(p):
     '''sheet_definition : SHEET SHEET_IDENT sheet_init
                         | SHEET SHEET_IDENT'''
-    print('Sheet_definition: ', p[2])
+    print('variable definition(', p[2], ': Sheet)')
 
 def p_sheet_init(p):
     '''sheet_init : EQ INT_LITERAL MULT INT_LITERAL
@@ -51,45 +47,30 @@ def p_sheet_row(p):
 def p_range_definition(p):
     '''range_definition : RANGE RANGE_IDENT
                         | RANGE RANGE_IDENT EQ range_expr'''
-    print('range_definition: ', p[2])
+    print('variable definition(', p[2], ': Range)')
+
+def p_range_expr(p):
+    '''range_expr : RANGE_IDENT
+                  | RANGE cell_ref DOTDOT cell_ref
+                  | LSQUARE function_call RSQUARE
+                  | range_expr LSQUARE INT_LITERAL COMMA INT_LITERAL RSQUARE'''
+    #print('range_expr: ', p[1])
+
+def p_range_list(p):
+    '''range_list : range_expr
+                  | range_expr COMMA range_list'''
 
 def p_scalar_definition(p):
     '''scalar_definition : SCALAR IDENT
                          | SCALAR IDENT EQ scalar_expr'''
-    print('scalar_definition: ', p[2])
-
-def p_statement_list(p):
-    '''statement_list : statement
-                      | statement statement_list'''
-
-#TÄÄ NYT VÄHÄN NIIN KUIN RIKKOO KAIKEN JA KOKO MAAILMANASLKJFBAKJ A
-def p_statement(p):
-    '''statement : END
-                 | PRINT_SHEET INFO_STRING SHEET_IDENT
-                 | PRINT_SHEET SHEET_IDENT
-                 | PRINT_RANGE INFO_STRING range_expr
-                 | PRINT_RANGE range_expr
-                 | PRINT_SCALAR INFO_STRING scalar_expr
-                 | PRINT_SCALAR scalar_expr
-                 | IF scalar_expr THEN statement_list ELSE statement_list ENDIF
-                 | IF scalar_expr THEN statement_list ENDIF
-                 | WHILE scalar_expr DO statement_list DONE
-                 | FOR range_list DO statement_list DONE
-                 | subroutine_call
-                 | RETURN scalar_expr
-                 | RETURN range_expr
-                 | assignment'''
-    print('statement: ', p[1])
-
-def p_cell_ref(p):
-    '''cell_ref : SHEET_IDENT SQUOTE COORDINATE_IDENT
-                | DOLLAR
-                | DOLLAR COLON RANGE_IDENT'''
-    print('cell ref: ', p[1])
+    print('variable definition(', p[2], ': Scalar)')
+    #print('scalar_definition: ', p[2])
 
 def p_scalar_expr(p):
     '''scalar_expr : simple_expr scalar_expr2'''
+    print('scalar_expr')
 
+#Onks tässä virhe, onko 2,3,2,3,2 oikein vai olisko 2,2,2,3 oikeempi?
 def p_scalar_expr2(p):
     '''scalar_expr2 : empty
                     | scalar_expr2 scalar_expr3'''
@@ -102,6 +83,40 @@ def p_scalar_expr3(p):
                     | GT simple_expr
                     | GTEQ simple_expr'''
 
+def p_statement_list(p):
+    '''statement_list : statement
+                      | statement statement_list'''
+
+def p_statement(p):
+    '''statement : statement1
+                 | statement2'''
+    #print('statement: ', p[1])
+
+def p_statement1(p):
+    '''statement1 : PRINT_SHEET INFO_STRING SHEET_IDENT
+                  | PRINT_SHEET SHEET_IDENT
+                  | PRINT_RANGE INFO_STRING range_expr
+                  | PRINT_RANGE range_expr
+                  | PRINT_SCALAR INFO_STRING scalar_expr
+                  | PRINT_SCALAR scalar_expr
+                  | IF scalar_expr THEN statement_list ELSE statement_list ENDIF
+                  | IF scalar_expr THEN statement_list ENDIF
+                  | WHILE scalar_expr DO statement_list DONE
+                  | FOR range_list DO statement_list DONE
+                  | RETURN scalar_expr
+                  | RETURN range_expr'''
+    print('statement: ', p[1])
+
+def p_statement2(p):
+    '''statement2 : subroutine_call
+                  | assignment'''
+
+def p_cell_ref(p):
+    '''cell_ref : SHEET_IDENT SQUOTE COORDINATE_IDENT
+                | DOLLAR
+                | DOLLAR COLON RANGE_IDENT'''
+    #print('cell ref: ', p[1])
+
 def p_simple_expr(p):
     '''simple_expr : term simple_expr2'''
 
@@ -112,49 +127,51 @@ def p_simple_expr2(p):
 
 def p_term(p):
     '''term : factor term2'''
+    print('term')
 
 def p_term2(p):
     '''term2 : empty
              | MULT factor term2
              | DIV factor term2'''
 
-def p_range_expr(p):
-    '''range_expr : RANGE_IDENT
-                  | RANGE cell_ref DOTDOT cell_ref
-                  | LSQUARE function_call RSQUARE
-                  | range_expr LSQUARE INT_LITERAL COMMA INT_LITERAL RSQUARE'''
-    print('range_expr: ', p[1])
-
-#TÄTÄ EI SIT OO TESTATTU ÖALSKF
-#TODO
-def p_range_list(p):
-    '''range_list : range_expr
-                  | range_expr COMMA range_expr'''
-
 def p_factor(p):
     '''factor : atom
               | MINUS atom'''
+    print('factor')
 
 def p_atom(p):
-    '''atom : IDENT
-            | DECIMAL_LITERAL
-            | function_call
-            | cell_ref
-            | NUMBER_SIGN range_expr
-            | LPAREN scalar_expr RPAREN'''
+    '''atom : atom2
+            | atom3'''
+
+def p_atom2(p):
+    '''atom2 : IDENT
+             | DECIMAL_LITERAL'''
     print('atom: ', p[1])
 
-def p_assignment(p):
-    '''assignment : IDENT ASSIGN scalar_expr
-                  | cell_ref ASSIGN scalar_expr
-                  | RANGE_IDENT ASSIGN range_expr
-                  | SHEET_IDENT ASSIGN SHEET_IDENT'''
+def p_atom3(p):
+    '''atom3 : function_call
+             | cell_ref
+             | NUMBER_SIGN range_expr
+             | LPAREN scalar_expr RPAREN'''
+    print('atom')
 
-#Funktion definition jostain syystä valitta, eikä toimi
+def p_assignment(p):
+    '''assignment : assignment2
+                  | assignment3'''
+
+def p_assignment2(p):
+    '''assignment2 : IDENT ASSIGN scalar_expr
+                   | RANGE_IDENT ASSIGN range_expr
+                   | SHEET_IDENT ASSIGN SHEET_IDENT'''
+    print('assignment: ', p[1])
+
+def p_assignment3(p):
+    '''assignment3 : cell_ref ASSIGN scalar_expr'''
+
 def p_function_definition(p):
     '''function_definition : FUNCTION FUNC_IDENT LSQUARE function_definition2
                            | FUNCTION FUNC_IDENT LSQUARE formals function_definition2'''
-    print('function_definition', p[2])
+    print('function definition: ', p[2])
 
 def p_function_definition2(p):
     '''function_definition2 : RSQUARE RETURN SCALAR IS function_definition3
@@ -166,7 +183,7 @@ def p_function_definition3(p):
 
 def p_function_definition4(p):
     '''function_definition4 : statement_list END'''
-    print('function_definition: ', p[1])
+    print('function definition: ', p[1])
 
 def p_formals(p):
     '''formals : formal_arg
@@ -176,18 +193,17 @@ def p_formal_arg(p):
     '''formal_arg : IDENT COLON SCALAR
                   | RANGE_IDENT COLON RANGE
                   | SHEET_IDENT COLON SHEET'''
-    print('formal_arg: ', p[1])
+    print('formal arguments: ', p[1])
 
 def p_function_call(p):
     '''function_call : FUNC_IDENT LSQUARE RSQUARE
                      | FUNC_IDENT LSQUARE arguments RSQUARE'''
     print('function call: ', p[1])
 
-#Tätä ei oo vielä testattu
 def p_subroutine_definition(p):
     '''subroutine_definition : SUBROUTINE FUNC_IDENT LSQUARE formals RSQUARE IS subroutine_definition2
                              | SUBROUTINE FUNC_IDENT LSQUARE RSQUARE IS subroutine_definition2'''
-    print('subroutine_definition: ', p[2])
+    print('subroutine definition: ', p[2])
 
 def p_subroutine_definition2(p):
     '''subroutine_definition2 : subroutine_definition3
@@ -199,6 +215,7 @@ def p_subroutine_definition3(p):
 def p_subroutine_call(p):
     '''subroutine_call : FUNC_IDENT LSQUARE RSQUARE
                        | FUNC_IDENT LSQUARE arguments RSQUARE'''
+    print('subroutine call: ', p[1])
 
 def p_arguments(p):
     '''arguments : arg_expr
