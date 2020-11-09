@@ -11,7 +11,6 @@ tokens = lexer.tokens
 def p_program(p):
     '''program : statement_list
                | function_or_variable_definition program'''
-    #print( 'program' )
 
 def p_function_or_variable_definition1(p):
     '''function_or_variable_definition : variable_definition
@@ -39,7 +38,6 @@ def p_sheet_init_list2(p):
     '''sheet_init_list2 : sheet_row sheet_init_list2
                         | RCURLY'''
 
-#Tähän pitäis tulla muutos
 def p_sheet_row(p):
     '''sheet_row : simple_expr
                  | simple_expr COMMA sheet_row'''
@@ -54,7 +52,6 @@ def p_range_expr(p):
                   | RANGE cell_ref DOTDOT cell_ref
                   | LSQUARE function_call RSQUARE
                   | range_expr LSQUARE INT_LITERAL COMMA INT_LITERAL RSQUARE'''
-    #print('range_expr: ', p[1])
 
 def p_range_list(p):
     '''range_list : range_expr
@@ -64,13 +61,11 @@ def p_scalar_definition(p):
     '''scalar_definition : SCALAR IDENT
                          | SCALAR IDENT EQ scalar_expr'''
     print('variable definition(', p[2], ': Scalar)')
-    #print('scalar_definition: ', p[2])
 
 def p_scalar_expr(p):
     '''scalar_expr : simple_expr scalar_expr2'''
     print('scalar_expr')
 
-#Onks tässä virhe, onko 2,3,2,3,2 oikein vai olisko 2,2,2,3 oikeempi?
 def p_scalar_expr2(p):
     '''scalar_expr2 : empty
                     | scalar_expr2 scalar_expr3'''
@@ -90,7 +85,6 @@ def p_statement_list(p):
 def p_statement(p):
     '''statement : statement1
                  | statement2'''
-    #print('statement: ', p[1])
 
 def p_statement1(p):
     '''statement1 : PRINT_SHEET INFO_STRING SHEET_IDENT
@@ -115,7 +109,6 @@ def p_cell_ref(p):
     '''cell_ref : SHEET_IDENT SQUOTE COORDINATE_IDENT
                 | DOLLAR
                 | DOLLAR COLON RANGE_IDENT'''
-    #print('cell ref: ', p[1])
 
 def p_simple_expr(p):
     '''simple_expr : term simple_expr2'''
