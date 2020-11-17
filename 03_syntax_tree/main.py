@@ -17,7 +17,8 @@ def p_program1(p):
     '''program : statement_list'''
     print('-------------------')
     p[0] = Node("program")
-    p[0].children_assigns = [ p[1] ]
+    p[0].children_assigns = [ ]
+    p[0].child_expr = p[1]
     #p[0].child_expr = p[1]
     #if (len(p) > 2):
     #    p[0].child_rest = p[2]
@@ -25,7 +26,7 @@ def p_program1(p):
 def p_program2(p):
     '''program : function_or_variable_definition program'''
     p[0] = p[2]
-    p[0].children_assigns.append(p[1])
+    p[0].children_assigns.insert(0, p[1])
 
 def p_function_or_variable_definition1(p):
     '''function_or_variable_definition : variable_definition
@@ -61,7 +62,6 @@ def p_sheet_init(p):
 def p_sheet_init_list(p):
     '''sheet_init_list : LCURLY sheet_row sheet_init_list2'''
     p[0] = Node('sheet init list')
-    p[0].value = p[0]
     p[0].child_left = p[2]
     p[0].child_right = p[3]
 
@@ -92,9 +92,9 @@ def p_range_definition(p):
     p[0] = Node('range definition')
     if (len(p) > 3):
         p[0].value = p[2]
+        p[0].child_expr = p[4]
     else:
         p[0].value = p[2]
-        p[0].child_expr = p[4]
 
 def p_range_expr(p):
     '''range_expr : RANGE_IDENT
@@ -102,8 +102,19 @@ def p_range_expr(p):
                   | LSQUARE function_call RSQUARE
                   | range_expr LSQUARE INT_LITERAL COMMA INT_LITERAL RSQUARE'''
     p[0] = Node('range expr')
-    #TODO Tänne tarttee jotain höttöö paljon, et mikä on mitenkäkin
-    p[0].value = p[1]
+    if(len(p) == 2):
+        p[0].value = p[1]
+    elif (len(p) == 4):
+        p[0].child_expr = p[2]
+    elif(len(p) == 5):
+        p[0].value = p[3]
+        p[0].child_left = p[2]
+        p[0].child_right = p[4]
+    else:
+        #TODO En oo ihan varma mitä tää tarkottaa ja miten tän pitäis olla :S
+        #Hmh, onkohan se itse asiassa nyt ihan oikein. Got to check when I has brain
+        p[0].value = 'range_expr [int , int], mitä täs tapahtuu'
+        p[0].child_expr = p[1]
 
 def p_range_list(p):
     '''range_list : range_expr
@@ -153,7 +164,6 @@ def p_scalar_expr3(p):
     p[0].value = p[1]
     p[0].child_expr = p[2]
 
-
 def p_statement_list(p):
     '''statement_list : statement
                       | statement statement_list'''
@@ -197,6 +207,10 @@ def p_cell_ref(p):
     #Tää pitää muuttaa viel, ja kattoo et mitä toi ny oikeen ottaa tonne
     p[0].value = p[1]
 
+#TODO: Tähän vois tehä semmosen, et 2 simple expressionia, toisessa pelkkä term,
+# toisessa term PLUS term simple_exprN/term MINUS term simple_exprN. Siten
+# Noden nimeen saadaan toi aritmeettinen merkki, ja termit lapsiks.
+
 def p_simple_expr(p):
     '''simple_expr : term simple_expr2'''
     p[0] = Node('simple expr')
@@ -208,11 +222,13 @@ def p_simple_expr2(p):
                     | PLUS term simple_expr2
                     | MINUS term simple_expr2'''
     if (len(p) > 2):
-        p[0] = Node('simple expr')
-        p[0].value = p[1]
+        p[0] = Node('oper ' + p[1])
+        #p[0].value = p[1]
         p[0].child_left = p[2]
         p[0].child_right = p[3]
 
+#TODO: Täällä pitänee tehä samanlainen ratkaisu kuin mitä tonne
+# simple_expressioneihin
 def p_term(p):
     '''term : factor term2'''
     print('term')
@@ -234,11 +250,13 @@ def p_factor(p):
     '''factor : atom
               | MINUS atom'''
     print('factor')
-    p[0] = Node('factor')
     if (len(p) > 2):
+        #Pitäisköhän toi muuttaa factorin sijaan joksikin "minus" tjm
+        p[0] = Node('factor')
+        p[0].value = p[1]
         p[0].child_expr = p[2]
     else:
-        p[0].child_expr = p[1]
+        p[0] = p[1]
 
 def p_atom(p):
     '''atom : atom2
@@ -258,19 +276,37 @@ def p_atom3(p):
              | NUMBER_SIGN range_expr
              | LPAREN scalar_expr RPAREN'''
     print('atom')
+    if (len(p) > 2):
+        p[0] = p[2]
+    else:
+        p[0] = p[1]
 
 def p_assignment(p):
     '''assignment : assignment2
                   | assignment3'''
+    p[0] = p[1]
 
-def p_assignment2(p):
+def p_assignment2a(p):
     '''assignment2 : IDENT ASSIGN scalar_expr
-                   | RANGE_IDENT ASSIGN range_expr
-                   | SHEET_IDENT ASSIGN SHEET_IDENT'''
+                   | RANGE_IDENT ASSIGN range_expr'''
     print('assignment: ', p[1])
+    p[0] = Node('assign')
+    p[0].value = p[1]
+    p[0].child_expr = p[3]
+
+# Eihän tässä oo mitään vikaa et molemmat lähtee pisteestä assignment2, mut toi
+# assignment3 on tehty erikseen
+def p_assignment2b(p):
+    '''assignment2 : SHEET_IDENT ASSIGN SHEET_IDENT'''
+    print('assignment: ', p[1])
+    p[0] = Node('assign')
+    p[0].value = p[1]
 
 def p_assignment3(p):
     '''assignment3 : cell_ref ASSIGN scalar_expr'''
+    p[0] = Node('assign')
+    p[0].child_left = p[1]
+    p[0].child_right = p[3]
 
 def p_function_definition(p):
     '''function_definition : FUNCTION FUNC_IDENT LSQUARE function_definition2
