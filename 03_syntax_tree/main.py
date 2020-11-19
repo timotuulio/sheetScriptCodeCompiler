@@ -55,7 +55,7 @@ def p_sheet_init(p):
     p[0] = Node('sheet init')
     #p[0].value = p[0]
     if (len(p) > 3):
-        p[0].value = p[3]
+        p[0].value = [p[2], p[3], p[4]]
     else:
         p[0].child_expr = p[2]
 
@@ -83,7 +83,6 @@ def p_sheet_row(p):
         p[0].child_right = p[3]
     else:
         p[0].child_expr = p[1]
-
 
 def p_range_definition(p):
     '''range_definition : RANGE RANGE_IDENT
@@ -136,6 +135,8 @@ def p_scalar_definition(p):
     if (len(p) > 2):
         p[0].child_expr = p[4]
 
+#TODO: Skalaari expressiot ei toimi, kun niissä on aina se oikea lapsi joka ei toimi
+# ja kikki on kakkaa
 def p_scalar_expr(p):
     '''scalar_expr : simple_expr scalar_expr2'''
     print('scalar_expr')
@@ -143,7 +144,6 @@ def p_scalar_expr(p):
     #p[0].value = p[0]
     p[0].child_left = p[1]
     p[0].child_right = p[2]
-
 
 def p_scalar_expr2(p):
     '''scalar_expr2 : empty
@@ -167,13 +167,12 @@ def p_scalar_expr3(p):
 def p_statement_list(p):
     '''statement_list : statement
                       | statement statement_list'''
-    p[0] = Node('Statement list')
-    if (len(p) > 2):
-        p[0].child_left = p[1]
-        p[0].child_right = p[2]
+    if (len(p) == 2):
+        p[0] = Node("Statement list")
+        p[0].children_statement_list = [ p[1] ]
     else:
-        p[0].child_expr = p[1]
-
+        p[0] = p[2]
+        p[0].children_statement_list.insert(0, p[1])
 
 def p_statement(p):
     '''statement : statement1
@@ -194,10 +193,12 @@ def p_statement1(p):
                   | RETURN scalar_expr
                   | RETURN range_expr'''
     print('statement: ', p[1])
+    p[0] = Node('statement')
 
 def p_statement2(p):
     '''statement2 : subroutine_call
                   | assignment'''
+    p[0] = p[1]
 
 def p_cell_ref(p):
     '''cell_ref : SHEET_IDENT SQUOTE COORDINATE_IDENT
@@ -207,44 +208,62 @@ def p_cell_ref(p):
     #Tää pitää muuttaa viel, ja kattoo et mitä toi ny oikeen ottaa tonne
     p[0].value = p[1]
 
-#TODO: Tähän vois tehä semmosen, et 2 simple expressionia, toisessa pelkkä term,
-# toisessa term PLUS term simple_exprN/term MINUS term simple_exprN. Siten
-# Noden nimeen saadaan toi aritmeettinen merkki, ja termit lapsiks.
-
 def p_simple_expr(p):
-    '''simple_expr : term simple_expr2'''
-    p[0] = Node('simple expr')
-    p[0].child_left = p[1]
-    p[0].child_right = p[2]
-
-def p_simple_expr2(p):
-    '''simple_expr2 : empty
-                    | PLUS term simple_expr2
-                    | MINUS term simple_expr2'''
+    '''simple_expr : term
+                   | simple_expr MINUS term
+                   | simple_expr PLUS term'''
     if (len(p) > 2):
-        p[0] = Node('oper ' + p[1])
+        p[0] = Node('oper ' + p[2])
+        # p[0].value = p[1]
+        p[0].child_left = p[1]
+        p[0].child_right = p[3]
+    else:
+        p[0] = p[1]
+
+#def p_simple_expr1a(p):
+    #'''simple_expr : term simple_expr2'''
+#    '''simple_expr : term'''
+#    p[0] = Node('simple expr')
+#    p[0].child_left = p[1]
+#    p[0].child_right = p[2]
+
+#def p_simple_expr1b(p):
+#    '''simple_expr : term PLUS term simple_expr2
+#                   | term MINUS term simple_expr2'''
+#    if (len(p) > 2):
+#        p[0] = Node('oper ' + p[1])
         #p[0].value = p[1]
-        p[0].child_left = p[2]
-        p[0].child_right = p[3]
+#        p[0].child_left = p[2]
+#        p[0].child_right = p[3]
 
-#TODO: Täällä pitänee tehä samanlainen ratkaisu kuin mitä tonne
-# simple_expressioneihin
 def p_term(p):
-    '''term : factor term2'''
-    print('term')
-    p[0] = Node('term')
-    p[0].child_left = p[1]
-    p[0].child_right = p[2]
-
-def p_term2(p):
-    '''term2 : empty
-             | MULT factor term2
-             | DIV factor term2'''
+    '''term : factor
+            | term MULT factor
+            | term DIV factor'''
     if (len(p) > 2):
-        p[0] = Node('term')
-        p[0].value = p[1]
-        p[0].child_left = p[2]
+        p[0] = Node('oper ' + p[2])
+        # p[0].value = p[1]
+        p[0].child_left = p[1]
         p[0].child_right = p[3]
+    else:
+        p[0] = p[1]
+
+#def p_term(p):
+#    '''term : factor term2'''
+#    print('term')
+#    p[0] = Node('term')
+#    p[0].child_left = p[1]
+#    p[0].child_right = p[2]
+
+#def p_term2(p):
+#    '''term2 : empty
+#             | MULT factor term2
+#             | DIV factor term2'''
+#    if (len(p) > 2):
+#        p[0] = Node('term')
+#        p[0].value = p[1]
+#        p[0].child_left = p[2]
+#        p[0].child_right = p[3]
 
 def p_factor(p):
     '''factor : atom
@@ -339,6 +358,10 @@ def p_function_call(p):
     '''function_call : FUNC_IDENT LSQUARE RSQUARE
                      | FUNC_IDENT LSQUARE arguments RSQUARE'''
     print('function call: ', p[1])
+    p[0] = Node('function call')
+    p[0].value = p[1]
+    if(len(p) > 4):
+        p[0].child_expr = p[3]
 
 def p_subroutine_definition(p):
     '''subroutine_definition : SUBROUTINE FUNC_IDENT LSQUARE formals RSQUARE IS subroutine_definition2
@@ -360,6 +383,8 @@ def p_subroutine_call(p):
 def p_arguments(p):
     '''arguments : arg_expr
                  | arg_expr COMMA arguments'''
+    p[0] = Node('arguments')
+    #Tähän kuuluu vielä lisätä asioita
 
 def p_arg_expr(p):
     '''arg_expr : SHEET_IDENT
