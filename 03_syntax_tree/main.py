@@ -110,8 +110,8 @@ def p_range_expr(p):
         p[0].child_left = p[2]
         p[0].child_right = p[4]
     else:
-        #TODO En oo ihan varma mitä tää tarkottaa ja miten tän pitäis olla :S
-        #Hmh, onkohan se itse asiassa nyt ihan oikein. Got to check when I has brain
+        """TODO En oo ihan varma mitä tää tarkottaa ja miten tän pitäis olla :S
+        Hmh, onkohan se itse asiassa nyt ihan oikein. Got to check when I has brain"""
         p[0].value = 'range_expr [int , int], mitä täs tapahtuu'
         p[0].child_expr = p[1]
 
@@ -119,8 +119,8 @@ def p_range_list(p):
     '''range_list : range_expr
                   | range_expr COMMA range_list'''
     p[0] = Node('range list')
-    p[0].value = p[0]
-    if (len(p) > 1):
+    #p[0].value = p[0]
+    if (len(p) > 2):
         p[0].child_left = p[1]
         p[0].child_right = p[3]
     else:
@@ -179,10 +179,8 @@ def p_statement(p):
                  | statement2'''
     p[0] = p[1]
 
-def p_statement1(p):
-    '''statement1 : PRINT_SHEET INFO_STRING SHEET_IDENT
-                  | PRINT_SHEET SHEET_IDENT
-                  | PRINT_RANGE INFO_STRING range_expr
+def p_statement1a(p):
+    '''statement1 : PRINT_RANGE INFO_STRING range_expr
                   | PRINT_RANGE range_expr
                   | PRINT_SCALAR INFO_STRING scalar_expr
                   | PRINT_SCALAR scalar_expr
@@ -194,6 +192,31 @@ def p_statement1(p):
                   | RETURN range_expr'''
     print('statement: ', p[1])
     p[0] = Node('statement')
+    if (len(p) == 3):
+        p[0].value = p[1]
+        p[0].child_expr = p[2]
+    elif(len(p) == 4):
+        p[0].value = p[1]
+        p[0].child_expr = p[3]
+    elif(len(p) == 6):
+        p[0].value = p[1]
+        p[0].child_left = p[2]
+        p[0].child_right = p[4]
+    else:
+        p[0].value = p[1]
+        p[0].child_if = p[2]
+        p[0].child_then = p[4]
+        p[0].child_else = p[6]
+
+def p_statement1b(p):
+    '''statement1 : PRINT_SHEET SHEET_IDENT
+                  | PRINT_SHEET INFO_STRING SHEET_IDENT'''
+    print('statement: ', p[1])
+    p[0] = Node('statement')
+    if (len(p) == 3):
+        p[0].value = p[2]
+    else:
+        p[0].value = p[3]
 
 def p_statement2(p):
     '''statement2 : subroutine_call
@@ -384,12 +407,22 @@ def p_arguments(p):
     '''arguments : arg_expr
                  | arg_expr COMMA arguments'''
     p[0] = Node('arguments')
-    #Tähän kuuluu vielä lisätä asioita
+    if (len(p) == 2):
+        p[0] = Node("arguments")
+        p[0].children_argument_list = [ p[1] ]
+    else:
+        p[0] = p[3]
+        p[0].children_argument_list.insert(0, p[1])
 
-def p_arg_expr(p):
-    '''arg_expr : SHEET_IDENT
-                | range_expr
+def p_arg_expra(p):
+    '''arg_expr : range_expr
                 | scalar_expr'''
+    p[0] = p[1]
+
+def p_arg_exprb(p):
+    '''arg_expr : SHEET_IDENT'''
+    p[0] = Node('sheet ident')
+    p[0].value = p[1]
 
 def p_empty(p):
     'empty :'
@@ -418,7 +451,7 @@ if __name__ == '__main__':
 
     if ns.who == True:
         # identify who wrote this
-        print( '88888 Ahto Simakuutio' )
+        print( '415428 Timo Tuulio' )
     elif ns.file is None:
         # user didn't provide input filename
         arg_parser.print_help()
