@@ -19,9 +19,6 @@ def p_program1(p):
     p[0] = Node("program")
     p[0].children_assigns = [ ]
     p[0].child_expr = p[1]
-    #p[0].child_expr = p[1]
-    #if (len(p) > 2):
-    #    p[0].child_rest = p[2]
 
 def p_program2(p):
     '''program : function_or_variable_definition program'''
@@ -60,11 +57,32 @@ def p_sheet_init(p):
         p[0].child_expr = p[2]
 
 def p_sheet_init_list(p):
+    '''sheet_init_list : LCURLY sheet_init_list2'''
+    p[0] = p[2]
+
+def p_sheet_init_list2a(p):
+    '''sheet_init_list2 : sheet_row sheet_init_list2'''
+    p[0] = p[2]
+    p[0].children_sheet_rows.insert(0, p[1])
+
+def p_sheet_init_list2b(p):
+    '''sheet_init_list2 : sheet_row sheet_init_list3'''
+    p[0] = Node("Sheet row")
+    p[0].children_sheet_rows = [ p[1] ]
+    p[0].child_expr = p[2]
+
+def p_sheet_init_list3(p):
+    '''sheet_init_list3 : RCURLY'''
+
+
+"""
+def p_sheet_init_list(p):
     '''sheet_init_list : LCURLY sheet_row sheet_init_list2'''
     p[0] = Node('sheet init list')
     p[0].child_left = p[2]
     p[0].child_right = p[3]
 
+#TODO: Chekkaa toi kommentti tosta
 def p_sheet_init_list2(p):
     '''sheet_init_list2 : sheet_row sheet_init_list2
                         | RCURLY'''
@@ -72,17 +90,16 @@ def p_sheet_init_list2(p):
     p[0] = Node('sheet init list2')
     if(len(p) > 1):
         p[0].child_expr = p[1]
-
+"""
 def p_sheet_row(p):
     '''sheet_row : simple_expr
                  | simple_expr COMMA sheet_row'''
     p[0] = Node('sheet row')
-    #p[0].value = p[0]
     if (len(p) > 2):
-        p[0].child_left = p[1]
-        p[0].child_right = p[3]
+        p[0] = p[3]
+        p[0].children_row_element.insert(0, p[1])
     else:
-        p[0].child_expr = p[1]
+        p[0].children_row_element = [ p[1] ]
 
 def p_range_definition(p):
     '''range_definition : RANGE RANGE_IDENT
@@ -110,9 +127,8 @@ def p_range_expr(p):
         p[0].child_left = p[2]
         p[0].child_right = p[4]
     else:
-        """TODO En oo ihan varma mitä tää tarkottaa ja miten tän pitäis olla :S
-        Hmh, onkohan se itse asiassa nyt ihan oikein. Got to check when I has brain"""
-        p[0].value = 'range_expr [int , int], mitä täs tapahtuu'
+        #TODO Hmh, onkohan tää nyt ihan oikein. Got to check esimerkeistä
+        p[0].value = [ p[3], p[4], p[5] ]
         p[0].child_expr = p[1]
 
 def p_range_list(p):
@@ -141,7 +157,6 @@ def p_scalar_expr(p):
     '''scalar_expr : simple_expr scalar_expr2'''
     print('scalar_expr')
     p[0] = Node('scalar expr')
-    #p[0].value = p[0]
     p[0].child_left = p[1]
     p[0].child_right = p[2]
 
@@ -223,13 +238,16 @@ def p_statement2(p):
                   | assignment'''
     p[0] = p[1]
 
+# TODO: Tää ei välttämättä oo oikeen muotoinen
 def p_cell_ref(p):
     '''cell_ref : SHEET_IDENT SQUOTE COORDINATE_IDENT
                 | DOLLAR
                 | DOLLAR COLON RANGE_IDENT'''
     p[0] = Node('cell ref')
-    #Tää pitää muuttaa viel, ja kattoo et mitä toi ny oikeen ottaa tonne
-    p[0].value = p[1]
+    if (len(p) == 2):
+        p[0].value = p[1]
+    else:
+        p[0].value = [ p[1], p[2], p[3] ]
 
 def p_simple_expr(p):
     '''simple_expr : term
@@ -336,6 +354,7 @@ def p_assignment2a(p):
     p[0].value = p[1]
     p[0].child_expr = p[3]
 
+#TODO: Testaa onks täs järkee
 # Eihän tässä oo mitään vikaa et molemmat lähtee pisteestä assignment2, mut toi
 # assignment3 on tehty erikseen
 def p_assignment2b(p):
@@ -354,28 +373,56 @@ def p_function_definition(p):
     '''function_definition : FUNCTION FUNC_IDENT LSQUARE function_definition2
                            | FUNCTION FUNC_IDENT LSQUARE formals function_definition2'''
     print('function definition: ', p[2])
+    p[0] = Node('function definition')
+    p[0].value = p[2]
+    if(len(p) == 5):
+        p[0].child_expr = p[4]
+    else:
+        p[0].child_left = p[4]
+        p[0].child_right = p[5]
 
 def p_function_definition2(p):
     '''function_definition2 : RSQUARE RETURN SCALAR IS function_definition3
                             | RSQUARE RETURN RANGE IS function_definition3'''
+    p[0] = p[5]
 
 def p_function_definition3(p):
     '''function_definition3 : function_definition4
                             | variable_definition function_definition3'''
+    #p[0] = Node('function variables')
+    if (len(p) == 2):
+        p[0] = Node("function variables")
+        p[0].children_function_variable = [ ]
+        p[0].child_expr = p[1]
+    else:
+        p[0] = p[2]
+        p[0].children_function_variable.insert(0, p[1])
 
 def p_function_definition4(p):
     '''function_definition4 : statement_list END'''
     print('function definition: ', p[1])
+    #p[0] = Node('function definition: End')
+    #p[0].child_expr = p[1]
+    p[0] = p[1]
 
 def p_formals(p):
     '''formals : formal_arg
                | formal_arg COMMA formals'''
+    #p[0] = Node('Formal arguments')
+    if (len(p) == 2):
+        p[0] = Node("Formals")
+        p[0].children_formal_list = [ p[1] ]
+    else:
+        p[0] = p[3]
+        p[0].children_formal_list.insert(0, p[1])
 
 def p_formal_arg(p):
     '''formal_arg : IDENT COLON SCALAR
                   | RANGE_IDENT COLON RANGE
                   | SHEET_IDENT COLON SHEET'''
     print('formal arguments: ', p[1])
+    p[0] = Node('formal argument')
+    p[0].value = p[1]
 
 def p_function_call(p):
     '''function_call : FUNC_IDENT LSQUARE RSQUARE
@@ -390,13 +437,28 @@ def p_subroutine_definition(p):
     '''subroutine_definition : SUBROUTINE FUNC_IDENT LSQUARE formals RSQUARE IS subroutine_definition2
                              | SUBROUTINE FUNC_IDENT LSQUARE RSQUARE IS subroutine_definition2'''
     print('subroutine definition: ', p[2])
+    p[0] = Node('subroutine definition')
+    p[0].value = p[2]
+    if(len(p) == 7):
+        p[0].child_expr = p[6]
+    else:
+        p[0].child_left = p[4]
+        p[0].child_right = p[7]
 
 def p_subroutine_definition2(p):
     '''subroutine_definition2 : subroutine_definition3
                               | variable_definition subroutine_definition2'''
+    if (len(p) == 2):
+        p[0] = Node("subroutine variables")
+        p[0].children_subroutine_variable = []
+        p[0].child_expr = p[1]
+    else:
+        p[0] = p[2]
+        p[0].children_subroutine_variable.insert(0, p[1])
 
 def p_subroutine_definition3(p):
     '''subroutine_definition3 : statement_list END'''
+    p[0] = p[1]
 
 def p_subroutine_call(p):
     '''subroutine_call : FUNC_IDENT LSQUARE RSQUARE
