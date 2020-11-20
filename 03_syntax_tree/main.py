@@ -50,7 +50,6 @@ def p_sheet_init(p):
     '''sheet_init : EQ INT_LITERAL MULT INT_LITERAL
                   | EQ sheet_init_list'''
     p[0] = Node('sheet init')
-    #p[0].value = p[0]
     if (len(p) > 3):
         p[0].value = [p[2], p[3], p[4]]
     else:
@@ -127,7 +126,7 @@ def p_range_expr(p):
         p[0].child_left = p[2]
         p[0].child_right = p[4]
     else:
-        #TODO Hmh, onkohan tää nyt ihan oikein. Got to check esimerkeistä
+        #TODO Hmh, tää vissiin on nyt ihan oikein. Vois varmistaa esimerkeistä
         p[0].value = [ p[3], p[4], p[5] ]
         p[0].child_expr = p[1]
 
@@ -148,36 +147,23 @@ def p_scalar_definition(p):
     print('variable definition(', p[2], ': Scalar)')
     p[0] = Node('scalar definition')
     p[0].value = p[2]
-    if (len(p) > 2):
+    if (len(p) > 3):
         p[0].child_expr = p[4]
 
-#TODO: Skalaari expressiot ei toimi, kun niissä on aina se oikea lapsi joka ei toimi
-# ja kikki on kakkaa
 def p_scalar_expr(p):
-    '''scalar_expr : simple_expr scalar_expr2'''
-    print('scalar_expr')
-    p[0] = Node('scalar expr')
-    p[0].child_left = p[1]
-    p[0].child_right = p[2]
-
-def p_scalar_expr2(p):
-    '''scalar_expr2 : empty
-                    | scalar_expr2 scalar_expr3'''
-    if (len(p) > 2):
-        p[0] = Node('scalar expr 2')
+    '''scalar_expr : simple_expr
+                   | scalar_expr EQ simple_expr
+                   | scalar_expr NOTEQ simple_expr
+                   | scalar_expr LT simple_expr
+                   | scalar_expr LTEQ simple_expr
+                   | scalar_expr GT simple_expr
+                   | scalar_expr GTEQ simple_expr'''
+    if(len(p) > 2):
+        p[0] = Node('oper ' + p[2])
         p[0].child_left = p[1]
-        p[0].child_right = p[2]
-
-def p_scalar_expr3(p):
-    '''scalar_expr3 : EQ simple_expr
-                    | NOTEQ simple_expr
-                    | LT simple_expr
-                    | LTEQ simple_expr
-                    | GT simple_expr
-                    | GTEQ simple_expr'''
-    p[0] = Node("oper " + p[1])
-    p[0].value = p[1]
-    p[0].child_expr = p[2]
+        p[0].child_right = p[3]
+    else:
+        p[0] = p[1]
 
 def p_statement_list(p):
     '''statement_list : statement
@@ -289,29 +275,13 @@ def p_term(p):
     else:
         p[0] = p[1]
 
-#def p_term(p):
-#    '''term : factor term2'''
-#    print('term')
-#    p[0] = Node('term')
-#    p[0].child_left = p[1]
-#    p[0].child_right = p[2]
-
-#def p_term2(p):
-#    '''term2 : empty
-#             | MULT factor term2
-#             | DIV factor term2'''
-#    if (len(p) > 2):
-#        p[0] = Node('term')
-#        p[0].value = p[1]
-#        p[0].child_left = p[2]
-#        p[0].child_right = p[3]
-
 def p_factor(p):
     '''factor : atom
               | MINUS atom'''
     print('factor')
     if (len(p) > 2):
         #Pitäisköhän toi muuttaa factorin sijaan joksikin "minus" tjm
+        #TODO tai siis miks toi factor toimii hyvin, vaik ton pitäis tehä uus lapsisolmu?
         p[0] = Node('factor')
         p[0].value = p[1]
         p[0].child_expr = p[2]
