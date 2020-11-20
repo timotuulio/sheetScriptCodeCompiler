@@ -132,14 +132,13 @@ def p_range_expr(p):
 
 def p_range_list(p):
     '''range_list : range_expr
-                  | range_expr COMMA range_list'''
-    p[0] = Node('range list')
-    #p[0].value = p[0]
-    if (len(p) > 2):
-        p[0].child_left = p[1]
-        p[0].child_right = p[3]
+                  | range_list COMMA range_expr'''
+    if (len(p) == 2):
+        p[0] = Node('range list')
+        p[0].children_range_list = [ p[1] ]
     else:
-        p[0].child_expr = p[1]
+        p[0] = p[1]
+        p[0].children_range_list.insert(0, p[3])
 
 def p_scalar_definition(p):
     '''scalar_definition : SCALAR IDENT
@@ -201,8 +200,9 @@ def p_statement1a(p):
         p[0].child_expr = p[3]
     elif(len(p) == 6):
         p[0].value = p[1]
-        p[0].child_left = p[2]
-        p[0].child_right = p[4]
+        #Pitäisköhän nää erittää >,<
+        p[0].child_for_while = p[2]
+        p[0].child_do = p[4]
     else:
         p[0].value = p[1]
         p[0].child_if = p[2]
@@ -246,22 +246,6 @@ def p_simple_expr(p):
         p[0].child_right = p[3]
     else:
         p[0] = p[1]
-
-#def p_simple_expr1a(p):
-    #'''simple_expr : term simple_expr2'''
-#    '''simple_expr : term'''
-#    p[0] = Node('simple expr')
-#    p[0].child_left = p[1]
-#    p[0].child_right = p[2]
-
-#def p_simple_expr1b(p):
-#    '''simple_expr : term PLUS term simple_expr2
-#                   | term MINUS term simple_expr2'''
-#    if (len(p) > 2):
-#        p[0] = Node('oper ' + p[1])
-        #p[0].value = p[1]
-#        p[0].child_left = p[2]
-#        p[0].child_right = p[3]
 
 def p_term(p):
     '''term : factor
@@ -371,14 +355,12 @@ def p_function_definition3(p):
 def p_function_definition4(p):
     '''function_definition4 : statement_list END'''
     print('function definition: ', p[1])
-    #p[0] = Node('function definition: End')
-    #p[0].child_expr = p[1]
+
     p[0] = p[1]
 
 def p_formals(p):
     '''formals : formal_arg
                | formal_arg COMMA formals'''
-    #p[0] = Node('Formal arguments')
     if (len(p) == 2):
         p[0] = Node("Formals")
         p[0].children_formal_list = [ p[1] ]
