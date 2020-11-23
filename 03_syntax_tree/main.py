@@ -17,13 +17,13 @@ def p_program1(p):
     '''program : statement_list'''
     print('-------------------')
     p[0] = Node("program")
-    p[0].children_assigns = [ ]
+    p[0].children_funcs_vars = [ ]
     p[0].child_expr = p[1]
 
 def p_program2(p):
     '''program : function_or_variable_definition program'''
     p[0] = p[2]
-    p[0].children_assigns.insert(0, p[1])
+    p[0].children_funcs_vars.insert(0, p[1])
 
 def p_function_or_variable_definition1(p):
     '''function_or_variable_definition : variable_definition
@@ -42,9 +42,11 @@ def p_sheet_definition(p):
                         | SHEET SHEET_IDENT'''
     print('variable definition(', p[2], ': Sheet)')
     p[0] = Node('sheet definition')
-    p[0].value = p[2]
+    #p[0].value = p[2]
+    p[0].child_name = Node('SHEET_IDENT')
+    p[0].child_name.value = p[2]
     if (len(p) > 2):
-        p[0].child_expr = p[3]
+        p[0].child_init = p[3]
 
 def p_sheet_init(p):
     '''sheet_init : EQ INT_LITERAL MULT INT_LITERAL
@@ -53,7 +55,7 @@ def p_sheet_init(p):
     if (len(p) > 3):
         p[0].value = [p[2], p[3], p[4]]
     else:
-        p[0].child_expr = p[2]
+        p[0].child_sheet_init_list = p[2]
 
 def p_sheet_init_list(p):
     '''sheet_init_list : LCURLY sheet_init_list2'''
@@ -62,13 +64,13 @@ def p_sheet_init_list(p):
 def p_sheet_init_list2a(p):
     '''sheet_init_list2 : sheet_row sheet_init_list2'''
     p[0] = p[2]
-    p[0].children_sheet_rows.insert(0, p[1])
+    p[0].children_sheet_row.insert(0, p[1])
 
 def p_sheet_init_list2b(p):
     '''sheet_init_list2 : sheet_row sheet_init_list3'''
     p[0] = Node("Sheet row")
-    p[0].children_sheet_rows = [ p[1] ]
-    p[0].child_expr = p[2]
+    p[0].children_sheet_row = [ p[1] ]
+    #p[0].child_expr = p[2]
 
 def p_sheet_init_list3(p):
     '''sheet_init_list3 : RCURLY'''
@@ -105,9 +107,11 @@ def p_range_definition(p):
                         | RANGE RANGE_IDENT EQ range_expr'''
     print('variable definition(', p[2], ': Range)')
     p[0] = Node('range definition')
+    p[0].child_name = Node('RANGE_IDENT')
+    p[0].child_name.value = p[2]
     if (len(p) > 3):
         p[0].value = p[2]
-        p[0].child_expr = p[4]
+        p[0].child_init = p[4]
     else:
         p[0].value = p[2]
 
@@ -122,9 +126,9 @@ def p_range_expr(p):
     elif (len(p) == 4):
         p[0].child_expr = p[2]
     elif(len(p) == 5):
-        p[0].value = p[3]
-        p[0].child_left = p[2]
-        p[0].child_right = p[4]
+        #p[0].value = p[3]
+        p[0].child_coord1 = p[2]
+        p[0].child_coord2 = p[4]
     else:
         #TODO Hmh, tää vissiin on nyt ihan oikein. Vois varmistaa esimerkeistä
         p[0].value = [ p[3], p[4], p[5] ]
@@ -145,9 +149,11 @@ def p_scalar_definition(p):
                          | SCALAR IDENT EQ scalar_expr'''
     print('variable definition(', p[2], ': Scalar)')
     p[0] = Node('scalar definition')
-    p[0].value = p[2]
+    #p[0].value = p[2]
+    p[0].child_name = Node('IDENT')
+    p[0].child_name.value = p[2]
     if (len(p) > 3):
-        p[0].child_expr = p[4]
+        p[0].child_init = p[4]
 
 def p_scalar_expr(p):
     '''scalar_expr : simple_expr
@@ -195,9 +201,12 @@ def p_statement1a(p):
     if (len(p) == 3):
         p[0].value = p[1]
         p[0].child_expr = p[2]
+    #TODO: Toi nyt näyttää vähän väärältä, jotain kakkelssia
     elif(len(p) == 4):
         p[0].value = p[1]
-        p[0].child_expr = p[3]
+        p[0].child_infostring = Node('infostring')
+        p[0].child_infostring.value = p[2]
+        p[0].child_expr = Node(p[1])
     elif(len(p) == 6):
         p[0].value = p[1]
         #Pitäisköhän nää erittää >,<
@@ -205,7 +214,7 @@ def p_statement1a(p):
         p[0].child_do = p[4]
     else:
         p[0].value = p[1]
-        p[0].child_if = p[2]
+        p[0].child_condition = p[2]
         p[0].child_then = p[4]
         p[0].child_else = p[6]
 
@@ -218,6 +227,8 @@ def p_statement1b(p):
         p[0].value = p[2]
     else:
         p[0].value = p[3]
+        p[0].child_infostring = Node('infostring')
+        p[0].child_infostring.value = p[2]
 
 def p_statement2(p):
     '''statement2 : subroutine_call
@@ -277,11 +288,16 @@ def p_atom(p):
             | atom3'''
     p[0] = p[1]
 
-def p_atom2(p):
-    '''atom2 : IDENT
-             | DECIMAL_LITERAL'''
+def p_atom2a(p):
+    '''atom2 : DECIMAL_LITERAL'''
     print('atom: ', p[1])
-    p[0] = Node('atom')
+    p[0] = Node('DECIMAL_LITERAL')
+    p[0].value = p[1]
+
+def p_atom2b(p):
+    '''atom2 : IDENT'''
+    print('atom: ', p[1])
+    p[0] = Node('IDENT')
     p[0].value = p[1]
 
 def p_atom3(p):
@@ -355,7 +371,6 @@ def p_function_definition3(p):
 def p_function_definition4(p):
     '''function_definition4 : statement_list END'''
     print('function definition: ', p[1])
-
     p[0] = p[1]
 
 def p_formals(p):
@@ -416,11 +431,15 @@ def p_subroutine_call(p):
     '''subroutine_call : FUNC_IDENT LSQUARE RSQUARE
                        | FUNC_IDENT LSQUARE arguments RSQUARE'''
     print('subroutine call: ', p[1])
+    p[0] = Node('subroutine call')
+    p[0].value = p[1]
+    if(len(p) > 4):
+        p[0].child_arguments = p[3]
 
 def p_arguments(p):
     '''arguments : arg_expr
                  | arg_expr COMMA arguments'''
-    p[0] = Node('arguments')
+    #p[0] = Node('arguments')
     if (len(p) == 2):
         p[0] = Node("arguments")
         p[0].children_argument_list = [ p[1] ]
