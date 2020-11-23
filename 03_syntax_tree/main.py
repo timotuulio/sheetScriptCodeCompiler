@@ -16,6 +16,7 @@ class Node:
 def p_program1(p):
     '''program : statement_list'''
     print('-------------------')
+    print('Syntax tree')
     p[0] = Node("program")
     p[0].children_funcs_vars = [ ]
     p[0].child_expr = p[1]
@@ -44,7 +45,7 @@ def p_sheet_definition(p):
     p[0] = Node('sheet definition')
     p[0].child_name = Node('SHEET_IDENT')
     p[0].child_name.value = p[2]
-    if (len(p) > 2):
+    if (len(p) > 3):
         p[0].child_init = p[3]
     else:
         p[0].child_init = Node('NONE')
@@ -275,7 +276,7 @@ def p_factor(p):
     print('factor')
     if (len(p) > 2):
         #Pitäisköhän toi muuttaa factorin sijaan joksikin "minus" tjm
-        #TODO tai siis miks toi factor toimii hyvin, vaik ton pitäis tehä uus lapsisolmu?
+        #tai siis miks toi factor toimii hyvin, vaik ton pitäis tehä uus lapsisolmu?
         p[0] = Node('factor')
         p[0].value = p[1]
         p[0].child_expr = p[2]
@@ -320,19 +321,21 @@ def p_assignment2a(p):
     print('assignment: ', p[1])
     p[0] = Node('scalar assign')
     p[0].child_name = Node(p[1])
-    p[0].child_expr = p[3]
+    p[0].child_assign_value = p[3]
 
 def p_assignment2b(p):
     '''assignment2 : SHEET_IDENT ASSIGN SHEET_IDENT'''
     print('assignment: ', p[1])
     p[0] = Node('sheet assign')
     p[0].child_name = Node(p[1])
+    p[0].child_assign_value = Node(p[3])
 
 def p_assignment2c(p):
     '''assignment2 : RANGE_IDENT ASSIGN range_expr'''
     print('assignment: ', p[1])
     p[0] = Node('range assign')
     p[0].child_name = Node(p[1])
+    p[0].child_assign_value = p[3]
 
 def p_assignment3(p):
     '''assignment3 : cell_ref ASSIGN scalar_expr'''
@@ -390,13 +393,13 @@ def p_formal_arg1(p):
     p[0] = Node('IDENT')
     p[0].value = p[1]
 
-def p_formal_arg(p):
+def p_formal_arg2(p):
     '''formal_arg : RANGE_IDENT COLON RANGE'''
     print('formal arguments: ', p[1])
     p[0] = Node('RANGE_IDENT')
     p[0].value = p[1]
 
-def p_formal_arg(p):
+def p_formal_arg3(p):
     '''formal_arg : SHEET_IDENT COLON SHEET'''
     print('formal arguments: ', p[1])
     p[0] = Node('SHEET_IDENT')
