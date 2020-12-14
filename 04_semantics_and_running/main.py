@@ -1,6 +1,5 @@
 from semantics_common import visit_tree, SymbolData, SemData
 
-
 import sys
 import lexer
 import syntax
@@ -76,18 +75,48 @@ def eval_node(node, semdata):
         value = node.value
         return float(value)
     elif nodetype == 'print scalar':
-        if hasattr(node.child_name, "value"):
-            value = node.child_name.value
+        name = node.child_name
+        if hasattr(name, "value"):
+            if name.value in semdata.symtbl:
+                value = semdata.symtbl[name.value].value
+            else:
+                value = node.child_name.value
         else:
             value = eval_node(node.child_name, semdata)
         print(value)
         return None
-    elif nodetype == 'scalar definition' or nodetype == 'sheet definition':
+    elif nodetype == 'IDENT':
+        return float(semdata.symtbl[node.value].value)
+    elif nodetype == 'scalar definition':
         name = node.child_name.value
-        if node.child_init.nodetype == 'decimal number':
-            newVal = node.child_init.value
-        elif node.child_init.nodetype[0:4] == 'oper':
-            newVal = eval_node(node.child_init, semdata)
+        init = node.child_init
+        if init.nodetype == 'decimal number':
+            newVal = init.value
+        elif init.nodetype == 'IDENT':
+            newVal = semdata.symtbl[init.value].value
+        elif init.nodetype[0:4] == 'oper':
+            newVal = eval_node(init, semdata)
+        else:
+            return None
+        semdata.symtbl[name].value = newVal
+        return None
+    elif nodetype == 'scalar assign':
+        newVal = node.child_assign_value
+        semdata.symtbl[node.child_name.value] = newVal
+        return None
+    elif nodetype == 'sheet definition':
+        name = node.child_name.value
+        init = node.child_init
+        if init.nodetype[0:4] == 'oper':
+            newVal = eval_node(init, semdata)
+        elif init.nodetype == 'Sheet_init_list':
+            rowLen = len(init.children_row[0].children_column)
+            newVal = []
+            for row in init.children_row:
+                if len(row.children_column) != rowLen:
+                    return None
+                else:
+                    newVal.append(row)
         else:
             return None
         semdata.symtbl[name].value = newVal

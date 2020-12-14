@@ -306,7 +306,8 @@ def p_assignment(p):
 def p_assignment2a(p):
     '''assignment2 : IDENT ASSIGN scalar_expr'''
     p[0] = Node('scalar assign')
-    p[0].child_name = Node(p[1])
+    p[0].child_name = Node('ASSIDENT')
+    p[0].child_name.value = p[1]
     p[0].child_assign_value = p[3]
 
 def p_assignment2b(p):
