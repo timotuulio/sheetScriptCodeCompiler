@@ -3,7 +3,7 @@ In addition to the code, the group submits a text document in either plain text 
 Implemented in code:
 Semantic checks: 
 1. Variables and functions and subfunctions need to be defined before use and the names need to be unique.
-- This is done before running the code when doing the semantic check to make the symbol table. If the user tries to add a variable with the same name that already exists, the program gives an error message and crashes.
+- This is done before running the code when doing the semantic check to make the symbol table. If the user tries to add a variable with the same name that already exists, the program gives an error message and crashes. This works with functions and subroutines but they are not implemented later so using them will yield message: "Error, unknown node of type subroutine/function definition"
 
 2. Range expression of style SS'A1 .. SS'A5 checks that both values refer to the same sheet and that the range is either vertical or horizontal.
 - Both sheet-coordinates are secured in a table so that the values are easily accessed. The sheet variables are taken apart so that I have both the alphabetical and numerical values. The values of both sheets are compared; if there are more characters or if the character comparison (a < b) returns true, then there has been change in the rows. If the second number is greater than the first, there has been change in the columns. With xor-operator I check that only one of these has been changed. If so, the range definition is added to the symbol table. If not, the range expression gives the value of 0.
