@@ -1,4 +1,4 @@
-Run the main file with argument for the sheetscript-filename. There are example files for sheetscript added in project.
+Run the main file with argument for the sheetscript-filename. There are two examples for sheetscript added in project (animals.ss and subFuncDef.ss).
 For example:
 $ python main.py -f "animals.ss"
 
